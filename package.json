@@ -1,0 +1,23 @@
+{
+    "name": "USDC-op-api",
+    "version": "1.0.0",
+    "description": "API for on-ramp and off-ramp USDC",
+    "main": "index.js",
+    "scripts": {
+        "start": "nodemon index.js"
+    },
+    "auther": "Vincent Lee",
+    "dependencies": {
+        "@truffle/contract": "*",
+        "@truffle/hdwallet-provider": "^2.1.15",
+        "cors": "*",
+        "dotenv": "*",
+        "express": "*",
+        "mysql2": "*",
+        "nodemon": "*",
+        "sequelize": "^6.37.2",
+        "sequelize-cli": "*",
+        "web3": "*",
+        "web3-validator": "*"
+    }
+}
