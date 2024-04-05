@@ -24,7 +24,7 @@ const checkDeposit = async (request) => {
 
     let getDepositSumFromEvent = (total, event) => {
         let transaction = event.returnValues;
-        total = 0;
+        //total = 0;
         if (transaction.to == request.wallet_address) {
            total += parseFloat(usdcContract.fromWei(transaction.value.toString()))
         }
@@ -37,6 +37,8 @@ const checkDeposit = async (request) => {
         const events = await eventFilter;
         console.log("Event:", events);
         deposit = events.reduce(getDepositSumFromEvent, 0);
+
+        console.log("deposit: ", deposit)
     
         if (deposit >= request.amount) {
             await request.update({ allow_redeem: true });

@@ -78,7 +78,7 @@ const buyUSDC = async (req, res) => {
         const account = await Account.findByPk(account_id)
         console.log("start: ", account.balance, account.locked, account.version)
         if (account) {
-            if (account.balance > 0 && account.balance - account.locked >= 0) {
+            if (account.balance > 0 && account.balance - account.locked >= amount) {
 
                 try {
                     account.locked += amount;
