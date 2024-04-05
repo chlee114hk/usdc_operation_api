@@ -33,17 +33,6 @@ const checkDeposit = async (request) => {
     
     let deposit = 0
 
-    // eventFilter.then(
-    //     async (events) => {
-    //         console.log(events)
-    //         deposit = events.reduce(getDepositSumFromEvent, 0)
-
-    //         if (deposit >= request.amount) {
-    //             await request.update({allow_redeem: true});
-    //         }
-    //     }
-    // )
-
     const processEvents = async () => {
         const events = await eventFilter;
         console.log("Event:", events);
@@ -51,6 +40,10 @@ const checkDeposit = async (request) => {
     
         if (deposit >= request.amount) {
             await request.update({ allow_redeem: true });
+        }
+
+        if (deposit > request.amount) {
+            console.warn("User deposit more than redemption amount!")
         }
     }
 
@@ -62,7 +55,11 @@ const redeem = async (req, res) => {
     const request = await Request.findByPk(request_id);
     
     if (request) {
-        await checkDeposit(request)
+        try {
+            await checkDeposit(request)
+        } catch (error) {
+            return res.status(500).json({error: "Fail to process redemption."})
+        }
 
         console.log("can redeem?", request.allow_redeem)
 
@@ -81,7 +78,10 @@ const redeem = async (req, res) => {
             console.log("End redemption")
             return res.status(200).json({status: "ok", account: account});
         } else {
-            return res.status(500).json({error: "Required amount of USDC not yet received or redemption completed"})
+            if (request.allow_redeem) {
+                return res.status(500).json({error: "Redemption is processing or completed."})
+            }
+            return res.status(500).json({error: "Required amount of USDC not yet received."})
         }
     } else {
         return res.status(500).json({error: "Request not found"});

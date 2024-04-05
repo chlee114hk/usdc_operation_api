@@ -22,6 +22,15 @@ const Account = db['Account'];
 
 const createUser = async (req, res) => {
     const {email, first_name, last_name, wallet_address } = req.body;
+    
+    if (!email) {
+        return res.status(500).json({error: "Email must be provided!"}) 
+    }
+
+    if (!wallet_address) {
+        return res.status(500).json({error: "Wallet Address must be provided!"}) 
+    }
+    
     if (!isAddress(wallet_address)) {
         return res.status(500).json({error: "Invalid Etherum wallet address!"})
     }
@@ -45,7 +54,7 @@ const createUser = async (req, res) => {
             }
         );
         let accounts = await newUser.getAccounts()
-        res.status(201).json({ "account": accounts[0].id })
+        res.status(201).json({ "account_id": accounts[0].id, "user_id": newUser.id })
     } catch (error) {
         res.status(500).json({error: error});
     }
@@ -58,7 +67,7 @@ const getUsdcBalance = async (req, res) => {
         const balance = await usdcContract.balanceOf(user.wallet_address);
         res.status(200).json({status: "ok", balance: usdcContract.fromWei(balance)})
     } else {
-        return res.status(500).json({error: "Account not found"});
+        return res.status(500).json({error: "User not found"});
     }
 
 }

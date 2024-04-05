@@ -96,9 +96,11 @@ exports.balanceOf = async (account) => {
 
 exports.burn = async (amount) => {
     let walletAddress = await exports.getAccount();
+    let txCount = await web3.eth.getTransactionCount(walletAddress, "pending");
     amount = await web3.utils.toWei(amount.toString(), 'mwei');
     return usdcContract.methods.burn(amount).send({
-        from: walletAddress
+        from: walletAddress,
+        nonce: web3.utils.toHex(txCount)
     });
 }
 
@@ -145,9 +147,12 @@ exports.approve = async (owner, amount) => {
 
 exports.transferFrom = async (from, amount) => {
     let walletAddress = await exports.getAccount();
+    let txCount = await web3.eth.getTransactionCount(walletAddress, "pending");
     amount = await web3.utils.toWei(amount.toString(), 'mwei');
+    console.log("txCount", txCount)
     return usdcContract.methods.transferFrom(from, walletAddress, amount).send({
-        from: walletAddress
+        from: walletAddress,
+        nonce: web3.utils.toHex(txCount)
     });
 }
 

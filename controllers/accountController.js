@@ -47,6 +47,11 @@ const getBalance = async (req, res) => {
 const depositUSD = async (req, res) => {
     const account_id = req.params.id;
     const { amount } = req.body;
+
+    if (amount <= 0) {
+        return res.status(500).json({error: "Amount must be positvie!"});
+    }
+
     try {
         const account = await Account.findByPk(account_id);
         if (account) {
@@ -64,14 +69,25 @@ const depositUSD = async (req, res) => {
 const buyUSDC = async (req, res) => {
     const account_id = req.params.id || req.body.account_id;
     const { amount } = req.body;
+
+    if (amount <= 0) {
+        return res.status(500).json({error: "Amount must be positvie!"});
+    }
+
     try {
         const account = await Account.findByPk(account_id)
         console.log("start: ", account.balance, account.locked, account.version)
         if (account) {
-            if (account.balance - account.locked >= 0) {
-                account.locked += amount;
-                await account.save();
-                console.log("lock balance: ", account.balance, account.locked, account.version)
+            if (account.balance > 0 && account.balance - account.locked >= 0) {
+
+                try {
+                    account.locked += amount;
+                    await account.save();
+                    console.log("lock balance: ", account.balance, account.locked, account.version)
+                } catch (error) {
+                    return res.status(500).json({error: "Fail to update balance"});
+                }
+
                 let user = await User.findByPk(account.user_id);
 
                 try {
@@ -115,7 +131,18 @@ const buyUSDC = async (req, res) => {
 const requestRedemption = async (req, res) => {
     const account_id = req.params.id || req.body.account_id;
     const { amount } = req.body;
-    // try {
+
+    if (amount <= 0) {
+        return res.status(500).json({error: "Amount must be positvie!"});
+    }
+
+    const account = await Account.findByPk(account_id)
+
+    if (!account) {
+        return res.status(500).json({error: "Account not found"});
+    }
+
+    try {
         const requestCount = await Request.count()
         //const address = await usdcContract.newAccount(getCount());
         const address = await usdcContract.newAccount(1 + requestCount % 100);
@@ -124,7 +151,9 @@ const requestRedemption = async (req, res) => {
         console.log("block", blockNumber)
 
         await usdcContract.sendTransaction(address, 0.0005)
+        console.log(`Sent 0.0005 USDC to ${address}`)
         await usdcContract.approve(address, amount);
+        console.log(`Approved ${address} to spend ${amount} USDC`)
 
         const newRequest = await Request.create(
             {
@@ -144,9 +173,9 @@ const requestRedemption = async (req, res) => {
         //console.log('subscription:', subscription)
         //subscription.on('connected', (subscriptionId) => {console.log("Start subscriptionId with id:", subscriptionId)});
         res.status(200).json({request_id: newRequest.id, wallet_address: address});
-    // } catch (error) {
-    //     res.status(500).json({ error: error });
-    // }
+    } catch (error) {
+        res.status(500).json({ error: error });
+    }
 }
 
 module.exports = {getBalance, depositUSD, buyUSDC, requestRedemption};
