@@ -151,7 +151,7 @@ const requestRedemption = async (req, res) => {
         console.log("block", blockNumber)
 
         await usdcContract.sendTransaction(address, 0.0005)
-        console.log(`Sent 0.0005 USDC to ${address}`)
+        console.log(`Sent 0.0005 ether to ${address}`)
         await usdcContract.approve(address, amount);
         console.log(`Approved ${address} to spend ${amount} USDC`)
 
